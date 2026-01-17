@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bank Danagung - Go Green Mobile</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Arial', sans-serif; background-color: #ffffff; }
+        .mobile-view { width: 100%; max-width: 480px; min-height: 100vh; margin: 0 auto; position: relative; border: 1px solid #eee; overflow-x: hidden; }
+        
+        /* Tema Merah Banking */
+        .bank-red { background-color: #D32F2F; }
+        .card-red { background: linear-gradient(135deg, #e53935 0%, #b71c1c 100%); color: white; border-radius: 12px; }
+        
+        /* Tema Hijau Go Green */
+        .gogreen-header { background-color: #ffffff; border-bottom: 2px solid #2D6A4F; }
+        .btn-green { background-color: #2D6A4F; color: white; padding: 14px; border-radius: 10px; font-weight: bold; }
+        .btn-green:disabled { background-color: #cbd5e1; }
+        
+        .input-readonly { background-color: #f8fafc; color: #64748b; border: 1px solid #e2e8f0; }
+        .input-field { width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; outline: none; }
+        .hidden { display: none; }
+        .modal-overlay { background: rgba(0,0,0,0.6); backdrop-filter: blur(2px); }
+        .section-title { font-size: 11px; font-weight: bold; color: #1e3a8a; text-transform: uppercase; margin-bottom: 10px; display: flex; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 5px; }
+    </style>
+</head>
+<body>
+
+<div class="mobile-view">
+
+    <div id="screen-home" class="p-4">
+        <div class="flex justify-between items-center mb-6">
+            <img src="logo.png" alt="Logo" class="h-8">
+            <div class="w-8 h-8 bg-green-500 rounded-md"></div>
+        </div>
+
+        <div class="card-red p-6 mb-8 shadow-lg relative">
+            <p class="text-sm opacity-90 mb-1">No. rekening -</p>
+            <h2 class="text-2xl font-bold mb-4">Rp -</h2>
+            <p class="text-xs mb-4">Buka tabungan sekarang</p>
+            <div class="flex gap-2">
+                <button class="bg-white/20 px-4 py-2 rounded-md text-xs flex items-center">👁️ Tutup</button>
+                <button class="bg-white/20 px-4 py-2 rounded-md text-xs flex items-center">⇄ Pindah dana</button>
+            </div>
+            <div class="absolute top-4 right-4 bg-white/20 p-1 rounded">📋</div>
+        </div>
+
+        <h3 class="font-bold text-gray-700 mb-4">Layanan</h3>
+        <div class="grid grid-cols-4 gap-4 text-center">
+            <div onclick="checkValidation()" class="flex flex-col items-center cursor-pointer">
+                <div class="w-14 h-14 bg-white border border-gray-100 rounded-xl flex items-center justify-center mb-1 shadow-sm overflow-hidden p-2">
+                    <img src="green.png" alt="Go Green" class="w-full h-full object-contain">
+                </div>
+                <span class="text-[10px] font-bold text-green-700">Go Green</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-alert" class="hidden fixed inset-0 modal-overlay z-50 flex items-center justify-center p-6">
+        <div class="bg-white rounded-2xl p-8 text-center shadow-2xl">
+            <div class="text-red-500 mb-4 text-5xl">⚠️</div>
+            <p class="text-gray-800 font-bold mb-8 leading-relaxed">
+                Anda belum memiliki rekening mobile banking untuk aktivasi akun Go Green. Silahkan lakukan buka tabungan atau pembukaan rekening.
+            </p>
+            <button onclick="closeModal()" class="w-full py-3 bg-red-600 text-white rounded-xl font-bold">Tutup</button>
+        </div>
+    </div>
+
+    <div id="screen-onboarding" class="hidden">
+        <div class="p-4 flex items-center border-b">
+            <button onclick="resetFlow()" class="text-2xl mr-4">←</button>
+            <h1 class="font-bold">Aktivasi Go Green</h1>
+        </div>
+        <div class="p-6">
+            <h2 class="text-xl font-bold text-gray-800 mb-6">Pilih Tipe Akun</h2>
+            <div class="space-y-4">
+                <div onclick="showForm('Nasabah')" class="p-4 border-2 border-green-600 rounded-xl bg-green-50 flex items-center cursor-pointer">
+                    <span class="text-2xl mr-4">♻️</span>
+                    <div>
+                        <p class="font-bold text-green-900">Nasabah</p>
+                        <p class="text-xs text-green-700">Setor sampah & kumpulkan uang</p>
+                    </div>
+                </div>
+                <div onclick="showForm('Bank Sampah')" class="p-4 border border-gray-200 rounded-xl flex items-center cursor-pointer hover:bg-gray-50">
+                    <span class="text-2xl mr-4">🏦</span>
+                    <div>
+                        <p class="font-bold text-gray-800">Bank Sampah</p>
+                        <p class="text-xs text-gray-500">Pengelola & Pengepul Unit</p>
+                    </div>
+                </div>
+                 <div onclick="showForm('Pengepul')" class="p-4 border border-gray-200 rounded-xl flex items-center cursor-pointer hover:bg-gray-50">
+                    <span class="text-2xl mr-4">🚚</span>
+                    <div>
+                        <p class="font-bold text-gray-800">Pengepul</p>
+                        <p class="text-xs text-gray-500">Mitra Penjemput Sampah</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="screen-form" class="hidden pb-20">
+        <div class="p-4 border-b flex items-center gogreen-header">
+            <button onclick="backToOnboarding()" class="text-2xl mr-4">←</button>
+            <h1 class="font-bold text-green-800">Data Aktivasi Nasabah</h1>
+        </div>
+        <div class="p-5 space-y-6">
+            <div>
+                <h3 class="text-xs font-bold text-blue-900 uppercase mb-3 flex items-center"><span class="mr-2">🛡️</span> Identitas (Prefill)</h3>
+                <div class="grid grid-cols-2 gap-3">
+                    <div><label class="text-[10px] text-gray-400 font-bold uppercase">No. Handphone</label><input type="text" value="0812****987" readonly class="w-full p-3 mt-1 rounded-lg text-sm input-readonly"></div>
+                    <div><label class="text-[10px] text-gray-400 font-bold uppercase">Nama (Wajib)</label><input type="text" value="BUDI SETIAWAN" readonly class="w-full p-3 mt-1 rounded-lg text-sm input-readonly"></div>
+                    <div><label class="text-[10px] text-gray-400 font-bold uppercase">CIF</label><input type="text" value="CIF-00012345" readonly class="w-full p-3 mt-1 rounded-lg text-sm input-readonly"></div>
+                </div>
+            </div>
+            <div>
+                <h3 class="text-xs font-bold text-blue-900 uppercase mb-3 flex items-center"><span class="mr-2">💳</span> Rekening Reward</h3>
+                <div class="space-y-4">
+                    <div><label class="text-[10px] text-gray-400 font-bold uppercase">Rekening Utama (Wajib)</label>
+                        <select id="select-rek" class="w-full p-3 mt-1 rounded-lg border border-blue-400 text-sm focus:ring-2 focus:ring-blue-200 outline-none">
+                            <option value="">-- Pilih Rekening Aktif --</option>
+                            <option value="1020888882">1020888882 (Tabungan) -- ACTIVE</option>
+                        </select>
+                    </div>
+                    <div><label class="text-[10px] text-gray-400 font-bold uppercase">Nama Pemilik Rekening</label><input type="text" value="BUDI SETIAWAN" readonly class="w-full p-3 mt-1 rounded-lg text-sm input-readonly"></div>
+                </div>
+            </div>
+            <div class="flex items-start pt-4">
+                <input type="checkbox" id="check-agree" class="w-5 h-5 mt-1">
+                <label for="check-agree" class="ml-3 text-xs text-gray-600 leading-relaxed">Saya setuju <span class="text-blue-600 underline">Syarat & Ketentuan</span> GoGreen.</label>
+            </div>
+        </div>
+        <div class="fixed bottom-0 left-0 right-0 max-w-[480px] mx-auto p-4 bg-white border-t"><button id="btn-submit" disabled class="w-full btn-green shadow-lg" onclick="showWaiting()">Ajukan Aktivasi Nasabah</button></div>
+    </div>
+
+    <div id="screen-form-pengepul" class="hidden pb-24">
+        <div class="p-4 border-b flex items-center gogreen-header">
+            <button onclick="backToOnboarding()" class="text-2xl mr-4">←</button>
+            <h1 class="font-bold text-green-800">Profil Pengepul</h1>
+        </div>
+        <div class="p-5 space-y-6">
+            <section>
+                <div class="section-title">🚚 Profil Pengepul</div>
+                <div class="grid grid-cols-1 gap-3">
+                    <div><label class="text-[10px] text-gray-400 font-bold uppercase">Nama Usaha / Individu (Wajib)</label><input type="text" class="input-field" placeholder="Contoh : PT Pengepul Jaya"></div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="text-[10px] text-gray-400 font-bold uppercase">Tipe Pengepul (Wajib)</label>
+                            <select class="input-field">
+                                <option value="">Pilih tipe pengepul</option>
+                                <option value="Individu">Individu</option>
+                                <option value="Badan Usaha">Badan Usaha</option>
+                            </select>
+                        </div>
+                        <div><label class="text-[10px] text-gray-400 font-bold uppercase">NIK/NPWP (Wajib)</label><input type="text" class="input-field" placeholder="16 Digit /NPWP"></div>
+                    </div>
+                    <div><label class="text-[10px] text-gray-400 font-bold uppercase">Alamat (Wajib)</label><input type="text" class="input-field" placeholder="Alamat Lengkap"></div>
+                </div>
+            </section>
+
+            <section>
+                <div class="section-title">📍 PIC</div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div><label class="text-[10px] text-gray-400 font-bold uppercase">Nama PIC (Wajib)</label><input type="text" class="input-field" placeholder="Nama"></div>
+                    <div><label class="text-[10px] text-gray-400 font-bold uppercase">No. HP PIC Operasional (Wajib)</label><input type="text" class="input-field" placeholder="08.......123"></div>
+                </div>
+            </section>
+
+            <section>
+                <div class="section-title">💳 CIF & Rekening Utama</div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div><label class="text-[10px] text-gray-400 font-bold uppercase">CIF (Wajib)</label><input type="text" value="CIF-00012345" readonly class="input-field input-readonly"></div>
+                    <div><label class="text-[10px] text-gray-400 font-bold uppercase">Rekening Sumber Dana (Wajib)</label>
+                        <select id="select-rek-pengepul" class="input-field border-blue-400">
+                            <option value="">-- Pilih Rekening --</option>
+                            <option value="1020888882">1020888882 (Tabungan) -- ACTIVE</option>
+                        </select>
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <div class="section-title">⚖️ Preferensi Pembayaran</div>
+                <div class="grid grid-cols-2 gap-3 mb-4">
+                    <div>
+                        <label class="text-[10px] text-gray-400 font-bold uppercase">Metode (Wajib)</label>
+                        <select class="input-field">
+                            <option value="">Pilih Metode</option>
+                            <option value="Transfer">Transfer Bank</option>
+                            <option value="Saldo">Saldo Go Green</option>
+                        </select>
+                    </div>
+                    <div><label class="text-[10px] text-gray-400 font-bold uppercase">Dokumen (opsional kebijakan)</label><input type="file" class="text-[10px]"></div>
+                </div>
+                <div class="flex items-start pt-2">
+                    <input type="checkbox" id="check-agree-pengepul" class="w-5 h-5 mt-1">
+                    <label for="check-agree-pengepul" class="ml-3 text-xs text-gray-600 leading-relaxed">Saya setuju <span class="text-blue-600 underline">Syarat & Ketentuan</span> GoGreen.</label>
+                </div>
+            </section>
+        </div>
+        <div class="fixed bottom-0 left-0 right-0 max-w-[480px] mx-auto p-4 bg-white border-t">
+            <button id="btn-submit-pengepul" disabled class="w-full btn-green shadow-lg" onclick="showWaiting()">Ajukan Aktivasi Pengepul</button>
+        </div>
+    </div>
+
+    <div id="screen-form-banksampah" class="hidden pb-24">
+        <div class="p-4 border-b flex items-center gogreen-header">
+            <button onclick="backToOnboarding()" class="text-2xl mr-4">←</button>
+            <h1 class="font-bold text-green-800">Profil Bank Sampah</h1>
+        </div>
+        <div class="p-5 space-y-6">
+            <section>
+                <div class="section-title">🏢 Profil Bank Sampah</div>
+                <div class="grid grid-cols-1 gap-3">
+                    <div><label class="text-[10px] text-gray-400 font-bold uppercase">Nama Bank Sampah (Wajib)</label><input type="text" class="input-field" placeholder="Contoh : Bank Sampah Melati"></div>
+                    <div><label class="text-[10px] text-gray-400 font-bold uppercase">Nama (Wajib)</label><input type="text" class="input-field" placeholder="Komunitas"></div>
+                    <div><label class="text-[10px] text-gray-400 font-bold uppercase">NIK/NPWP/No. Izin (Wajib)</label><input type="text" class="input-field" placeholder="16 Digit /NPWP"></div>
+                    <div><label class="text-[10px] text-gray-400 font-bold uppercase">Alamat (Wajib)</label><input type="text" class="input-field" placeholder="Alamat Lengkap"></div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div><label class="text-[10px] text-gray-400 font-bold uppercase">Wilayah (Wajib)</label><input type="text" class="input-field" placeholder="Prov/Kab/Kec/Kel"></div>
+                        <div><label class="text-[10px] text-gray-400 font-bold uppercase">Koordinat (Wajib)</label><input type="text" class="input-field" placeholder="-6.2, 106.8"></div>
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <div class="section-title">👤 PIC</div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div><label class="text-[10px] text-gray-400 font-bold uppercase">Nama PIC Ops (Wajib)</label><input type="text" class="input-field" placeholder="Nama"></div>
+                    <div><label class="text-[10px] text-gray-400 font-bold uppercase">No. HP PIC Ops (Wajib)</label><input type="text" class="input-field" placeholder="08.......123"></div>
+                    <div><label class="text-[10px] text-gray-400 font-bold uppercase">Nama PIC Keu (Wajib)</label><input type="text" class="input-field" placeholder="Nama"></div>
+                    <div><label class="text-[10px] text-gray-400 font-bold uppercase">No. HP PIC Keu (Wajib)</label><input type="text" class="input-field" placeholder="08.......123"></div>
+                </div>
+            </section>
+
+            <section>
+                <div class="section-title">💳 CIF & Rekening Utama</div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div><label class="text-[10px] text-gray-400 font-bold uppercase">CIF (Wajib)</label><input type="text" value="CIF-00012345" readonly class="input-field input-readonly"></div>
+                    <div><label class="text-[10px] text-gray-400 font-bold uppercase">Rekening Utama (Wajib)</label>
+                        <select id="select-rek-bs" class="input-field border-blue-400">
+                            <option value="">-- Pilih Rekening --</option>
+                            <option value="1020888882">1020888882 (Tabungan) -- ACTIVE</option>
+                        </select>
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <div class="section-title">📤 Dokumen</div>
+                <div class="grid grid-cols-2 gap-3 mb-4">
+                    <div><label class="text-[10px] text-gray-400 font-bold uppercase">Upload KTP/Legal (Wajib)</label><input type="file" class="text-[10px]"></div>
+                    <div><label class="text-[10px] text-gray-400 font-bold uppercase">Foto lokasi (Opsional)</label><input type="file" class="text-[10px]"></div>
+                </div>
+                <div class="flex items-start pt-2">
+                    <input type="checkbox" id="check-agree-bs" class="w-5 h-5 mt-1">
+                    <label for="check-agree-bs" class="ml-3 text-xs text-gray-600 leading-relaxed">Saya setuju <span class="text-blue-600 underline">Syarat & Ketentuan</span> GoGreen.</label>
+                </div>
+            </section>
+        </div>
+        <div class="fixed bottom-0 left-0 right-0 max-w-[480px] mx-auto p-4 bg-white border-t"><button id="btn-submit-bs" disabled class="w-full btn-green shadow-lg" onclick="showWaiting()">Ajukan Aktivasi Bank Sampah</button></div>
+    </div>
+
+    <div id="screen-waiting" class="hidden p-8 text-center mt-20">
+        <div class="w-24 h-24 bg-yellow-50 rounded-full flex items-center justify-center mx-auto mb-6"><span class="text-4xl animate-pulse">⏳</span></div>
+        <h2 class="text-xl font-bold text-gray-800">Waiting Approval</h2>
+        <p class="text-sm text-gray-500 mt-4 leading-relaxed">Permohonan Anda sedang dianalisa oleh back office. Notifikasi akan dikirimkan ke menu notifikasi m-banking Anda.</p>
+        <button onclick="resetFlow()" class="mt-10 text-green-700 font-bold underline">Kembali ke Beranda</button>
+    </div>
+
+</div>
+
+<div class="max-w-[480px] mx-auto mt-4 p-4 bg-gray-100 rounded-lg flex gap-2">
+    <p class="text-[10px] font-bold w-full uppercase">Skenario:</p>
+    <button onclick="setScenario(false)" class="text-[9px] bg-red-600 text-white p-2 rounded">Belum Punya Rekening</button>
+    <button onclick="setScenario(true)" class="text-[9px] bg-green-600 text-white p-2 rounded">Sudah Punya Rekening</button>
+</div>
+<script>
+    let hasCustomerID = false; 
+
+    function setScenario(status) { hasCustomerID = status; alert('Skenario: ' + (status ? 'Ada Rekening' : 'No Rekening')); }
+
+    function checkValidation() {
+        if (!hasCustomerID) { document.getElementById('modal-alert').classList.remove('hidden'); } 
+        else { showScreen('screen-onboarding'); }
+    }
+
+    function showForm(role) {
+        if (role === 'Nasabah') { showScreen('screen-form'); } 
+        else if (role === 'Pengepul') { showScreen('screen-form-pengepul'); }
+        else { showScreen('screen-form-banksampah'); }
+    }
+
+    function showScreen(id) {
+        ['screen-home', 'screen-onboarding', 'screen-form', 'screen-form-pengepul', 'screen-form-banksampah', 'screen-waiting'].forEach(s => document.getElementById(s).classList.add('hidden'));
+        document.getElementById(id).classList.remove('hidden');
+    }
+
+    function closeModal() { document.getElementById('modal-alert').classList.add('hidden'); }
+    function resetFlow() { location.reload(); }
+    function backToOnboarding() { showScreen('screen-onboarding'); }
+    function showWaiting() { showScreen('screen-waiting'); }
+
+    // Validation Logic for all forms
+    const selectRek = document.getElementById('select-rek');
+    const checkAgree = document.getElementById('check-agree');
+    const btnSubmit = document.getElementById('btn-submit');
+    
+    const selectRekPengepul = document.getElementById('select-rek-pengepul');
+    const checkAgreePengepul = document.getElementById('check-agree-pengepul');
+    const btnSubmitPengepul = document.getElementById('btn-submit-pengepul');
+
+    const selectRekBS = document.getElementById('select-rek-bs');
+    const checkAgreeBS = document.getElementById('check-agree-bs');
+    const btnSubmitBS = document.getElementById('btn-submit-bs');
+
+    function validate() {
+        btnSubmit.disabled = !(selectRek.value && checkAgree.checked);
+        btnSubmitPengepul.disabled = !(selectRekPengepul.value && checkAgreePengepul.checked);
+        btnSubmitBS.disabled = !(selectRekBS.value && checkAgreeBS.checked);
+    }
+
+    [selectRek, checkAgree, selectRekPengepul, checkAgreePengepul, selectRekBS, checkAgreeBS].forEach(el => el.addEventListener('change', validate));
+</script>
+
+</body>
+</html>
